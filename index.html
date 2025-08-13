@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎉 Birthday Quest — Original</title>
+  <style>
+    body {background:#0f0f12; color:#f7f7fb; font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif; margin:0;}
+    .center {display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:24px}
+    input, button {padding:12px 16px; border-radius:10px; border:none; margin-top:10px; font-size:16px}
+    input {width:260px; background:#0d0d10; color:#fff; border:1px solid #30303a}
+    button {background:#e95d8c; color:#fff; cursor:pointer; font-weight:700}
+    button.secondary{background:#2a2a33; color:#fff}
+    .hidden {display:none}
+
+    .app{max-width:860px; margin:0 auto; padding:24px 16px 56px}
+    .card{background:linear-gradient(180deg,#1d1d25 0%,#111114 100%); border:1px solid #2a2a33; border-radius:20px; padding:24px; box-shadow:0 10px 30px #00000070}
+    .q h2{margin:0 0 12px}
+    .hint{color:#a3a3b2; font-size:14px; margin-top:8px}
+    .msg{margin-top:8px; font-size:14px}
+    .ok{color:#43d17d} .err{color:#ff6b6b}
+    .links a{display:block; margin:8px 0; color:#e95d8c}
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <!-- Парольний екран -->
+  <div id="lock-screen" class="center">
+    <h1>🔒 Доступ обмежений</h1>
+    <p>Як Сонечко тебе називає?</p>
+    <input type="text" id="password" placeholder="Відповідь..." />
+    <button id="btn-open" type="button">Відкрити</button>
+    <div id="lock-msg" class="msg"></div>
+  </div>
+
+  <!-- Гра -->
+  <div id="game" class="hidden">
+    <div class="app">
+      <div class="card q" id="stage">
+        <!-- контент підставляється скриптом -->
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Легка нормалізація відповіді
+  const normalize = s => (s||"")
+    .toLowerCase()
+    .replace(/[`ʼ'’]/g, "'")
+    .replace(/\s+/g,' ')
+    .trim();
+
+  // Кроки квесту (оновлено під твої назви файлів!)
+  const STEPS = [
+    {
+      q: "Як ти мене називаєш з пісні?",
+      answers: [
+        'девочка пиздец','дєвочка пиздец','дєвочка піздец','девочка піздец',
+        'девочка-пиздец','дєвочка-пиздец','дєвочка-піздец','девочка-піздец'
+      ],
+      hint: "Доречний рядок із репу 🎤",
+      prize: { title: "Вітальна листівка", text: "Почнемо з м'якого — але гарячого",
+        links: [ { label: "Відкрити листівку", href: "./prizes/Birthday-card.jpg" } ] }
+    },
+    {
+      q: "Якого числа і місяця ми познайомились? (прописом)",
+      answers: ['другого березня'],
+      hint: "Весна, початок історії 🌸",
+      prize: { title: "Лист від мене (PDF)", text: "Я написала це спеціально для тебе",
+        links: [ { label: "Завантажити лист", href: "./prizes/Letter.pdf", download:true } ] }
+    },
+    {
+      q: "Як ти себе любиш називати. Підказка (С П О)",
+      answers: ['стара пойобана ондатра'],
+      hint: "Три слова, ініціали: С-П-О",
+      prize: { title: "Оксідрочер — відео", text: "Трохи абсурду, трохи сміху 😈",
+        links: [ { label: "Відтворити відео", href: "./prizes/Oxydrocher.mp4" } ] }
+    },
+    {
+      q: "Візьми кожну букву по черзі (1-ша, 2-га…), 'my nobby mate honor nowcz derbby  maverik bestival'",
+      answers: ['мотоцикл'],
+      hint: "Дві колісні пристрасті…",
+      prize: { title: "Сертифікат на байк", text: "Поїхали 🏍",
+        links: [ { label: "Відкрити сертифікат", href: "./prizes/CertificateMoto.jpg" } ] }
+    },
+    {
+      q: "Що я колись обіцяла подарувати тобі на день народження? (Підказка скоріш за все червоненькі)",
+      answers: ['трусики','панталки','плавки'],
+      hint: "Маленький текстиль із великим настроєм",
+      prize: { title: "Сертифікат на еротовари", text: "Використай мудро і з насолодою 😏",
+        links: [ { label: "Відкрити сертифікат", href: "./prizes/Certificatetr.jpg" } ] }
+    },
+    {
+      q: "З якою квіткою тебе асоціювала Пані?",
+      answers: ['едельвейс','еделвейс'],
+      hint: "Рідкісна гірська красуня",
+      prize: { title: "PlayMe (PDF)", text: "Легка пікантність у святковому стилі",
+        links: [ { label: "Відкрити PDF", href: "./prizes/PlayMe1.pdf", download:true } ] }
+    },
+    {
+      q: "Хто народжується у Серпні? Не забувайте про це 😜",
+      answers: ['лев','діва','ти','я'],
+      hint: "Кінець літа між двома сузір'ями 🦁♍",
+      prize: { title: "Фінальне відео-привітання", text: "Натисни, щоб переглянути фінал",
+        links: [ { label: "Дивитись відео", href: "./prizes/Z-DRnez.mp4" } ] }
+    }
+  ];
+
+  let i = 0;
+  const stage = document.getElementById('stage');
+
+  function renderStep(){
+    const step = STEPS[i];
+    stage.innerHTML = `
+      <h2>${step.q}</h2>
+      <input type=\"text\" id=\"answer\" placeholder=\"Відповідь...\" />
+      <div class=\"row\">
+        <button id=\"btn-check\" type=\"button\">Відповісти</button>
+        <button id=\"btn-hint\" class=\"secondary\" type=\"button\">Підказка</button>
+      </div>
+      <div class=\"msg\" id=\"msg\"></div>
+      <div class=\"hint hidden\" id=\"hint\">${step.hint||''}</div>
+    `;
+    document.getElementById('btn-check').addEventListener('click', checkAnswer);
+    document.getElementById('answer').addEventListener('keydown', e=>{ if(e.key==='Enter') checkAnswer(); });
+    document.getElementById('btn-hint').addEventListener('click', ()=>{
+      const h = document.getElementById('hint');
+      h.classList.remove('hidden');
+    });
+  }
+
+  function checkAnswer(){
+    const step = STEPS[i];
+    const val = normalize(document.getElementById('answer').value);
+    const ok = step.answers.map(normalize).includes(val);
+    const msg = document.getElementById('msg');
+    if(ok){
+      msg.textContent = 'Вірно!';
+      msg.className = 'msg ok';
+      // показ призу
+      const linksHTML = (step.prize.links||[]).map(l=>
+        `<a href=\"${l.href}\" ${l.download? 'download' : 'target=\"_blank\" rel=\"noopener\"'}>${l.label}</a>`
+      ).join('');
+      stage.innerHTML = `
+        <h2>${step.prize.title}</h2>
+        <p>${step.prize.text}</p>
+        <div class=\"links\">${linksHTML}</div>
+        <button id=\"btn-next\" type=\"button\">Далі →</button>
+      `;
+      document.getElementById('btn-next').addEventListener('click', nextStep);
+    } else {
+      msg.textContent = 'Не зовсім… спробуй ще 😉';
+      msg.className = 'msg err';
+    }
+  }
+
+  function nextStep(){
+    i++;
+    if(i < STEPS.length){
+      renderStep();
+    } else {
+      stage.innerHTML = `<h2>Квест завершено! 🎉</h2><p>Ти пройшов усі завдання!</p>`;
+    }
+  }
+
+  // Пароль
+  document.getElementById('btn-open').addEventListener('click', () => {
+    const val = normalize(document.getElementById('password').value);
+    if(['не зануда','незануда','не-зануда'].includes(val)){
+      document.getElementById('lock-screen').classList.add('hidden');
+      document.getElementById('game').classList.remove('hidden');
+      renderStep();
+    } else {
+      const m = document.getElementById('lock-msg');
+      m.textContent = 'Хм… А точно Сонечко так казало? 😉';
+      m.className = 'msg err';
+    }
+  });
+
+  // Самоперевірки в консолі
+  try{
+    console.assert(STEPS.length===7, 'Має бути 7 кроків');
+    console.assert(STEPS[6].prize.links[0].href.endsWith('Z-DRnez.mp4'), 'Останній відеофайл має бути Z-DRnez.mp4');
+    console.log('%cSelf-tests passed','color:#43d17d');
+  }catch(e){ console.warn('Self-tests error', e); }
+})();
+</script>
+</body>
+</html>
